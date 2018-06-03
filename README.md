@@ -1,6 +1,6 @@
 # P2P Chatting via Java (Fake & Tentative)
 
-> [Warn]: RECONSTRUCTION
+> [Warn]: RECONSTRUCTION BOOKED
 
 ### Dependencies
 
@@ -24,6 +24,7 @@
 
 ```markdown
 
+              RoomList
 +-------+<---+-------+>---.write-------+
 | View1 |    | Room1 |                 V
 +-------+    +-------+<---.join---<+-------+
@@ -41,7 +42,7 @@
                                        |    
                                      .send
                                        |	  
-         	                           V
+         	  RoomList                 V
 +-------+<---+-------+<---.join---<+-------+
 | View2 |    | Room1 |             | Peer2 |
 +-------+    +-------+             +-------+
