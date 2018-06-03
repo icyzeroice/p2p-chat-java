@@ -1,6 +1,8 @@
-package xyz.icyzeroice.librarys;
+package xyz.icyzeroice.libraries;
 
 public class Console {
+
+    private static Boolean isPrintLog = true;
 
     private static String getStringJoined(String[] mes) {
         StringBuilder str = new StringBuilder();
@@ -14,10 +16,14 @@ public class Console {
     }
 
     public static void log(String ... mes) {
-        System.out.println("[LOG]: " + getStringJoined(mes));
+        if (isPrintLog) {
+            System.out.println("[LOG]: " + getStringJoined(mes));
+        }
     }
 
     public static void err(String ... errMes) {
-        System.err.println("[ERR]: " + getStringJoined(errMes));
+        if (isPrintLog) {
+            System.err.println("[ERR]: " + getStringJoined(errMes));
+        }
     }
 }

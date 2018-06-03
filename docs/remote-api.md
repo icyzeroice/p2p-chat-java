@@ -9,7 +9,17 @@ ip = "139.199.5.24"
 port = 2333
 ```
 
-### Peers -> Server
+### type definition
+
+* <host>
+```json
+{
+    "ip": "<string>",
+    "port": "<number>"
+}
+```
+
+### Peers --[SEND]--> Server
 
 - `method`
   - `'SEEK'` ：创建 / 加入聊天室
@@ -18,85 +28,78 @@ port = 2333
 
 ```json
 {
-    "method": "string",
+    "method": "<string>",
     "data": {
-        "token": "string",
-        "inner": {
-            "ip": "string",
-            "port": "number"
-        }
+        "token": "<string>",
+        "public": "<host>",
+        "inner": "<host>"
     }
-
 }
 ```
 
-### Server -> Database
-
-
+### Server --[COMMUNICATE]--> Database
 
 ```json
 {
     "method": "string",
     "data": {
-        "token": "string",
-        "public": {
-            "ip": "string",
-            "port": "number"
-        },
-        "inner": {
-            "ip": "string",
-            "port": "number"
-        }
+        "token": "<string>",
+        "public": "<host>",
+        "inner": "<host>"
     }
 }
 ```
 
-### Database -> Server
+### Database --[COMMUNICATE]--> Server
 
 > `'SEEK'`
 
 > > Room has not been created.
+
 ```json
 {
     "role": "LEADER",
-    "token": "string",
-    "public": {},
-    "inner": {}
+    "token": "<string>",
+    "public": "<host>",
+    "inner": "<host>"
 }
 ```
 
 > > Room has been created
+
 ```json
 {
     "role": "MEMBER",
-    "token": "string",
-    "public": {},
-    "inner": {}
+    "token": "<string>",
+    "public": "<host>",
+    "inner": "<host>"
 }
 ```
 
 > `'UPDATE'`
+
 ```json
 {
     "role": "NEW_LEADER",
-    "token": "string",
-    "public": {},
-    "inner": {}
+    "token": "<string>",
+    "public": "<host>",
+    "inner": "<host>"
 }
 ```
 
 > `'LEAVE'`
-```js
+
+```
 "DELETE"
 ```
 
-### Server -> Peers
+### Server --[RECEIVE]--> Peers
 
 ```json
 {
-    "role": "string",
-    "token": "string",
-    "public": {},
-    "inner": {}
+    "role": "<string>",
+    "token": "<string>",
+    "public": "<host>",
+    "inner": "<host>"
 }
 ```
