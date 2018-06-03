@@ -242,15 +242,19 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
 
 
 
+    /**
+     * keep the peer alive
+     */
     private void __receivePulse() {
 
     }
 
 
-
-
-
+    /**
+     * acknowledge if the received chat room info is useful
+     */
     private void __receiveAcknowledge() {
+
         Console.log("Get ACK.");
     }
 
