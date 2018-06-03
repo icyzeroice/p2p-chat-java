@@ -1,5 +1,7 @@
 package xyz.icyzeroice.liveroom.deal;
 
+import xyz.icyzeroice.liveroom.peer.ChatPeer;
+
 /**
  * TODO: use true JSON parser library
  *
@@ -33,5 +35,21 @@ public class RequestSentToServer {
             + "\",\"port\":"
             + publicPort
             + "}}}";
+    }
+
+    public static String toString(ChatPeer peer) {
+        return "{\"token\":\""
+            + peer.getToken()
+            + "\",\"role\":\""
+            + peer.getRole()
+            + "\",\"inner\":{\"ip\":\""
+            + peer.getInnerIp()
+            + "\",\"port\":"
+            + peer.getInnerPort()
+            + "},\"public\":{\"ip\":\""
+            + peer.getPublicIp()
+            + "\",\"port\":"
+            + peer.getPublicPort()
+            + "}}";
     }
 }

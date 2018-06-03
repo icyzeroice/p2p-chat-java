@@ -4,7 +4,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
@@ -43,6 +42,17 @@ public class PoorUdpPeer implements Peer {
 
     private RoomList rooms = new RoomList();
 
+
+
+
+
+    /**
+     * initialize:
+     *
+     *   1. bootstrap
+     *   2. group
+     *   3. udp channel
+     */
     public PoorUdpPeer() {
         __init();
     }
@@ -58,15 +68,20 @@ public class PoorUdpPeer implements Peer {
                 .channel(NioDatagramChannel.class)
                 .handler(new PoorUdpPeerHandler(rooms));
 
-            // Add listener to wait for udp receiver bind finish
-            __bind(bootstrap).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+            // __bind(bootstrap).addListener(new ChannelFutureListener() {
+            //     @Override
+            //     public void operationComplete(ChannelFuture channelFuture) throws Exception {
+            //         channel = channelFuture.channel();
+            //         Console.log("UDP Channel is ready.");
+            //     }
+            // });
 
-                    // export completed udp channel
-                    channel = channelFuture.channel();
-                    Console.log("UDP Channel is ready.");
-                }
+            // Add listener to wait for udp receiver bind finish
+            __bind(bootstrap).addListener((ChannelFuture channelFuture) -> {
+
+                // export completed udp channel
+                channel = channelFuture.channel();
+                Console.log("UDP Channel is ready.");
             });
 
         } finally {
@@ -89,21 +104,9 @@ public class PoorUdpPeer implements Peer {
         }
     }
 
-    // send peer info to center server for initial info
-    // expect: {SERVER}
-    private void __pull(String request) {
-        __sendTo(request, centerHost, centerPort);
-    }
 
-    private void __sendTo(String message, String host, int port) {
-        if (channel != null) {
-            channel.writeAndFlush(new DatagramPacket(
-                Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
-                new InetSocketAddress(host, port)
-            ));
-            Console.log("Send data to", host + ":" + port);
-        }
-    }
+
+
 
     /**
      * Create/Join a room.
@@ -113,22 +116,61 @@ public class PoorUdpPeer implements Peer {
      * @return
      */
     public int join(String roomId, String roomPw) {
+
+        // generate a room token
         String roomToken = Encrypt.encodeToken(roomId, roomPw);
-        ChatRoom chatRoom = new ChatRoom(roomToken);
 
         // register a new room in location
+        ChatRoom chatRoom = new ChatRoom(roomToken);
         rooms.add(chatRoom);
 
-        // get the room handle
-        int roomOrder = rooms.indexOf(chatRoom);
-
         // pull room info from server
-        //   * room is not register in server --> create & be the leader
-        //   * room is existed in server      --> get the leader info
+        //   1. room is not register in server --> create & be the leader
+        //   2. room is existed in server      --> get the leader info
         __pull(RequestSentToServer.First("SEEK", roomToken, NetUtils.getInnerIp(), Integer.toString(localPort)));
-        return roomOrder;
+
+        // get the room handle
+        return rooms.indexOf(chatRoom);
     }
 
+    /**
+     * send peer info to center server & pull initial info from center server
+     *   expect: {SERVER}
+     *
+     * @param request
+     */
+    private void __pull(String request) {
+
+        // FIXME: Global variables
+        __sendTo(request, centerHost, centerPort);
+    }
+
+    /**
+     * Send udp packet to a certain address
+     * @param message
+     * @param host
+     * @param port
+     */
+    private void __sendTo(String message, String host, int port) {
+        if (channel != null) {
+            channel.writeAndFlush(new DatagramPacket(
+                Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
+                new InetSocketAddress(host, port)
+            ));
+            Console.log(message);
+            Console.log("Send last [LOG] message to", host + ":" + port);
+        }
+    }
+
+
+
+
+
+    /**
+     * Send message to all the other peers in a certain room.
+     * @param message    --
+     * @param roomHandle -- order at the roomList
+     */
     public void send(String message, int roomHandle) {
         ChatRoom room = rooms.get(roomHandle);
 
@@ -137,12 +179,17 @@ public class PoorUdpPeer implements Peer {
             int REMOTE_PORT = Integer.parseInt(peer.getPublicPort());
 
             // TODO: acknowledge rules is necessary
-            __sendTo(message, REMOTE_HOST, REMOTE_PORT);
+            // TODO: add NAT support (try both inner address & public address)
+            __sendTo("[MES][" + room.getToken() + "]" + message, REMOTE_HOST, REMOTE_PORT);
         }
     }
 
+    /**
+     * Leave a certain room.
+     * @param roomHandle
+     */
     public void leave(int roomHandle) {
-        rooms.clear();
+        rooms.remove(roomHandle);
     }
 
     public void close() {

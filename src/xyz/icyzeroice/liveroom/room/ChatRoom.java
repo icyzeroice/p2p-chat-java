@@ -1,5 +1,6 @@
 package xyz.icyzeroice.liveroom.room;
 
+import xyz.icyzeroice.liveroom.deal.RequestSentToServer;
 import xyz.icyzeroice.liveroom.peer.ChatPeer;
 import xyz.icyzeroice.liveroom.peer.PeerList;
 
@@ -7,14 +8,19 @@ import java.util.function.Predicate;
 
 public class ChatRoom {
 
+    public ChatPeer myself;
     private PeerList peerList = new PeerList();
-
     private String token;
-    private int leaderOrder;
+
+    // leaderOrder:
+    //   1. -1    --> I am the leader
+    //   2. N     --> leader position at the roomList
+    private int leaderOrder = -1;
 
 
     public ChatRoom(String token) {
         this.token = token;
+        this.myself = new ChatPeer(token);
     }
 
     public String getToken() {
@@ -53,5 +59,13 @@ public class ChatRoom {
     public ChatRoom setLeader() {
         leaderOrder = peerList.size();
         return this;
+    }
+
+    public String getPeerListToString() {
+        return RequestSentToServer.toString(myself)
+            + "["
+            + getToken()
+            + "]"
+            + peerList.toFormatString();
     }
 }

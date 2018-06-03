@@ -12,8 +12,15 @@ public class ChatPeer {
         setToken(token);
     }
 
-    public ChatPeer(String token, String role, String innerIp, String innerPort, String publicIp, String publicPort) {
-        setToken(token);
+    public void update(ChatPeer chatPeer) {
+        setRole(chatPeer.getRole());
+        setPublicIp(chatPeer.getPublicIp());
+        setPublicPort(chatPeer.getPublicPort());
+        setInnerIp(chatPeer.getInnerIp());
+        setInnerPort(chatPeer.getInnerPort());
+    }
+
+    public void update(String role, String innerIp, String innerPort, String publicIp, String publicPort) {
         setRole(role);
         setInnerIp(innerIp);
         setInnerPort(innerPort);

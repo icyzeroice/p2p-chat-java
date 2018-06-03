@@ -1,11 +1,13 @@
 package xyz.icyzeroice.liveroom.peer;
 
 import xyz.icyzeroice.libraries.Console;
+import xyz.icyzeroice.liveroom.deal.RequestSentToServer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class PeerList extends ArrayList<ChatPeer> {
 
@@ -49,5 +51,15 @@ public class PeerList extends ArrayList<ChatPeer> {
     public void clear() {
         Console.log("Clear the RoomList.");
         super.clear();
+    }
+
+    public String toFormatString() {
+        StringBuffer str = new StringBuffer();
+
+        for (int i = 0; i < size(); i++) {
+            str.append(RequestSentToServer.toString(get(i)) + "[" + get(i).getToken() + "]");
+        }
+
+        return str.toString();
     }
 }

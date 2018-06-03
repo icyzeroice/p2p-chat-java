@@ -1,5 +1,7 @@
 # P2P Chatting via Java (Fake & Tentative)
 
+> [Warn]: RECONSTRUCTION
+
 ### Dependencies
 
 * Netty 4.x

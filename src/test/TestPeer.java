@@ -20,9 +20,9 @@ public class TestPeer {
 
         int roomId = peer.join("AAA", "ppp");
 
-        Scanner scanner = new Scanner(System.in);
-        Console.log("[SEND]: ");
-        peer.send(scanner.next(), roomId);
+        // Scanner scanner = new Scanner(System.in);
+        // Console.log("[SEND]: ");
+        // peer.send(scanner.next(), roomId);
 
         // peer.send("Hello live room.");
         // peer.leave();
@@ -33,9 +33,5 @@ public class TestPeer {
         //         peer.close();
         //   }
         // }, 5000);
-
-
-        // UdpPeer peer2 = new PoorUdpPeer(CONST.LOCAL_TEST_PORT);
-
     }
 }

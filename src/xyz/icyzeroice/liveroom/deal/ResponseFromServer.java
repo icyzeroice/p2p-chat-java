@@ -2,7 +2,6 @@ package xyz.icyzeroice.liveroom.deal;
 
 import xyz.icyzeroice.liveroom.peer.ChatPeer;
 
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
