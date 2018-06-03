@@ -121,7 +121,7 @@ public class PoorUdpPeer implements Peer {
         String roomToken = Encrypt.encodeToken(roomId, roomPw);
 
         // register a new room in location
-        ChatRoom chatRoom = new ChatRoom(roomToken);
+        ChatRoom chatRoom = new ChatRoom(roomToken, localPort);
         rooms.add(chatRoom);
 
         // pull room info from server

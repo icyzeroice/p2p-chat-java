@@ -1,15 +1,25 @@
 package xyz.icyzeroice.liveroom.peer;
 
+import xyz.icyzeroice.libraries.NetUtils;
+
+import java.net.InetSocketAddress;
+
 public class ChatPeer {
-    private String token;
-    private String role;
-    private String innerIp;
-    private String innerPort;
-    private String publicIp;
-    private String publicPort;
+
+    private String token = "";
+    private String role = "UNKNOW";
+    private String innerIp = NetUtils.getInnerIp();
+    private String innerPort = "";
+    private String publicIp = "";
+    private String publicPort = "";
 
     public ChatPeer(String token) {
         setToken(token);
+    }
+
+    public ChatPeer(String token, String localPort) {
+        setToken(token);
+        setInnerPort(localPort);
     }
 
     public void update(ChatPeer chatPeer) {
@@ -44,6 +54,8 @@ public class ChatPeer {
         return role;
     }
 
+
+    // Inner Address
     public void setInnerIp(String innerIp) {
         this.innerIp = innerIp;
     }
@@ -60,6 +72,12 @@ public class ChatPeer {
         return innerPort;
     }
 
+    public InetSocketAddress getInnerAddress() {
+        return new InetSocketAddress(innerIp, Integer.parseInt(innerPort));
+    }
+
+
+    // Public Address
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
     }
@@ -75,4 +93,9 @@ public class ChatPeer {
     public String getPublicPort() {
         return publicPort;
     }
+
+    public InetSocketAddress getPublicAddress() {
+        return new InetSocketAddress(publicIp, Integer.parseInt(publicPort));
+    }
+
 }

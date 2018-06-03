@@ -5,6 +5,7 @@ import io.netty.channel.*;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.CharsetUtil;
 import xyz.icyzeroice.libraries.Console;
+import xyz.icyzeroice.liveroom.deal.RequestSentToServer;
 import xyz.icyzeroice.liveroom.deal.ResponseFromServer;
 import xyz.icyzeroice.liveroom.room.ChatRoom;
 import xyz.icyzeroice.liveroom.room.RoomList;
@@ -79,7 +80,7 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
 
         // 1. pull
         if (receive.startsWith("{")) {
-            __initRoomList(receive);
+            __initRoomList(channel, receive);
             return;
         }
 
@@ -130,9 +131,25 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
      * 1. pull
      * get a chat room JSON info from center server
      *
+     * CREATE>
+     *                 pull
+     *   [PEER.INIT]   ----> [SERVER]
+     *
+     *   [PEER=LEADER] <---- [SERVER]
+     *
+     * JOIN>
+     *                 pull
+     *   [PEER.INIT]   ----> [SERVER]
+     *
+     *   [PEER.SAVE]   <---- [SERVER]
+     *                 update, ack
+     *   [PEER.SET]    ----> [PEER=LEADER]
+     *                 update
+     *   [PEER=MEMBER] <---- [PEER=LEADER]
+     *
      * @param receive {ChatPeerInfoJSON}
      */
-    private void __initRoomList(String receive) {
+    private void __initRoomList(Channel channel, String receive) {
 
         // receive --> ChatPeer Object
         ChatPeer chatPeer = new ResponseFromServer(receive).getChatPeer();
@@ -156,13 +173,16 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
 
             // TODO: pull ip list AND self public ip, port from leader
             // TODO: register yourself to leader
-            __registerMyself();
+            __registerMyself(channel, room);
         }
     }
 
-    private void __registerMyself() {
-        // __wirte();
+    private void __registerMyself(Channel channle, ChatRoom room) {
+        __wirte(channle, "[ACK][" + room.getToken() + "]" + RequestSentToServer.toString(room.myself), room.getLeader().getPublicAddress());
     }
+
+
+
 
 
     /**
@@ -190,6 +210,7 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
         rooms.getIf((chatRoom -> chatRoom.getToken().equals(firstComing.getToken())))
              .addPeer(firstComing);
     }
+
     private void __updateRemotePeerList(Channel channel, ChatPeer firstComing, ChatRoom room, InetSocketAddress receipent) {
         __wirte(channel, "[UPD][" + firstComing.getToken() + "]" + room.getPeerListToString(), receipent);
     }
@@ -208,13 +229,27 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
         }
     }
 
+
+
+
+
     private void __receiveMessage(Channel channel, String message, ChatRoom room, InetSocketAddress receipent) {
         Console.log("Receive data from " + receipent, "\n", message);
         __wirte(channel, "[ACK]", receipent);
     }
+
+
+
+
+
     private void __receivePulse() {
 
     }
+
+
+
+
+
     private void __receiveAcknowledge() {
         Console.log("Get ACK.");
     }
