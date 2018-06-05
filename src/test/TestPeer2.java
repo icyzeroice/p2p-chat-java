@@ -1,23 +1,16 @@
 package test;
 
-import xyz.icyzeroice.libraries.Console;
-import xyz.icyzeroice.liveroom.CONST;
 import xyz.icyzeroice.liveroom.peer.PoorUdpPeer;
 
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
-
-public class TestPeer {
-
+public class TestPeer2 {
     /**
      *
      * @param args { String[] }
      */
     public static void main(String[] args) {
 
-        // PoorUdpPeer peer = new PoorUdpPeer("Ice");
-        PoorUdpPeer peer = new PoorUdpPeer("Zero");
+        PoorUdpPeer peer = new PoorUdpPeer("Ice");
+        //PoorUdpPeer peer = new PoorUdpPeer("Zero");
 
         int roomId = peer.join("AAA", "ppp");
 
