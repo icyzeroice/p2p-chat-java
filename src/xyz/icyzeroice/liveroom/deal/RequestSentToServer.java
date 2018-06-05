@@ -4,15 +4,15 @@ import xyz.icyzeroice.liveroom.peer.ChatPeer;
 
 /**
  * TODO: use true JSON parser library
- *
- * @param response {"method":"SEEK","data":{"token":"roomId+roomPw","inner":{"ip":"22.33.22.33","port":1212}}}
  */
 public class RequestSentToServer {
 
-    public static String First(String method, String token, String innerIp, String innerPort) {
+    public static String First(String method, String name, String token, String innerIp, String innerPort) {
         return "{\"method\":\""
             + method
-            + "\",\"data\":{\"token\":\""
+            + "\",\"data\":{\"name\":\""
+            + name
+            + "\",\"token\":\""
             + token
             + "\",\"inner\":{\"ip\":\""
             + innerIp
@@ -21,10 +21,12 @@ public class RequestSentToServer {
             + "}}}";
     }
 
-    public static String First(String method, String token, String innerIp, String innerPort, String publicIp, String publicPort) {
+    public static String First(String method, String name, String token, String innerIp, String innerPort, String publicIp, String publicPort) {
         return "{\"method\":\""
             + method
-            + "\",\"data\":{\"token\":\""
+            + "\",\"data\":{\"name\":\""
+            + name
+            + "\"\"token\":\""
             + token
             + "\",\"inner\":{\"ip\":\""
             + innerIp
@@ -38,18 +40,20 @@ public class RequestSentToServer {
     }
 
     public static String toString(ChatPeer peer) {
-        return "{\"token\":\""
+        return "{\"name\":\""
+            + peer.getName()
+            + "\",\"token\":\""
             + peer.getToken()
             + "\",\"role\":\""
             + peer.getRole()
             + "\",\"inner\":{\"ip\":\""
             + peer.getInnerIp()
-            + "\",\"port\":"
+            + "\",\"port\":\""
             + peer.getInnerPort()
-            + "},\"public\":{\"ip\":\""
+            + "\"},\"public\":{\"ip\":\""
             + peer.getPublicIp()
-            + "\",\"port\":"
+            + "\",\"port\":\""
             + peer.getPublicPort()
-            + "}}";
+            + "\"}}";
     }
 }

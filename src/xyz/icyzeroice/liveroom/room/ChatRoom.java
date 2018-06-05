@@ -1,5 +1,6 @@
 package xyz.icyzeroice.liveroom.room;
 import xyz.icyzeroice.liveroom.deal.RequestSentToServer;
+import xyz.icyzeroice.liveroom.deal.ResponseFromServer;
 import xyz.icyzeroice.liveroom.peer.ChatPeer;
 import xyz.icyzeroice.liveroom.peer.PeerList;
 
@@ -17,9 +18,9 @@ public class ChatRoom {
     private int leaderOrder = -1;
 
 
-    public ChatRoom(String token, int localPort) {
+    public ChatRoom(String name, String token, int localPort) {
         this.token = token;
-        this.myself = new ChatPeer(token, Integer.toString(localPort));
+        this.myself = new ChatPeer(name, token, Integer.toString(localPort));
     }
 
     public String getToken() {
@@ -72,6 +73,11 @@ public class ChatRoom {
     }
 
     public String getPeerListToString() {
+
+        if (peerList.size() == 0) {
+            return RequestSentToServer.toString(myself);
+        }
+
         return RequestSentToServer.toString(myself)
             + "["
             + getToken()

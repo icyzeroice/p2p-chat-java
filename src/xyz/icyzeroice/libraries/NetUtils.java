@@ -8,7 +8,6 @@ public class NetUtils {
         try {
 
             InetAddress inner = InetAddress.getLocalHost();
-            Console.log("Get local host address:", inner.getHostAddress());
             return inner.getHostAddress();
 
         } catch (UnknownHostException e) {

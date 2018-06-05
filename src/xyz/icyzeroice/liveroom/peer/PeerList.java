@@ -7,19 +7,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public class PeerList extends ArrayList<ChatPeer> {
 
     @Override
     public boolean add(ChatPeer peer) {
-        Console.log("Add room", peer.getToken(), "to RoomList");
+        Console.log("+", peer.toString());
         return super.add(peer);
     }
 
     @Override
     public ChatPeer get(int index) {
-        Console.log("Find room", super.get(index).getToken());
         return super.get(index);
     }
 

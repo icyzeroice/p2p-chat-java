@@ -1,6 +1,9 @@
 package test;
 
+import xyz.icyzeroice.libraries.Console;
 import xyz.icyzeroice.liveroom.peer.PoorUdpPeer;
+
+import java.util.Scanner;
 
 public class TestPeer2 {
     /**
@@ -14,10 +17,20 @@ public class TestPeer2 {
 
         int roomId = peer.join("AAA", "ppp");
 
-        // Scanner scanner = new Scanner(System.in);
-        // Console.log("[SEND]: ");
-        // peer.send(scanner.next(), roomId);
+        Scanner scanner = new Scanner(System.in);
+        String input;
 
+        while (true) {
+            System.out.println("[SEND]:");
+            input = scanner.next();
+
+            if (input.equals("end")) {
+                System.out.println("THE END.");
+                break;
+            }
+
+            peer.send(input, roomId);
+        }
         // peer.send("Hello live room.");
         // peer.leave();
         // Timer timer = new Timer();

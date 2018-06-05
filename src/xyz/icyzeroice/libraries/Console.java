@@ -1,5 +1,7 @@
 package xyz.icyzeroice.libraries;
 
+import java.net.InetSocketAddress;
+
 public class Console {
 
     private static Boolean isPrintLog = true;
@@ -18,6 +20,18 @@ public class Console {
     public static void log(String ... mes) {
         if (isPrintLog) {
             System.out.println("[LOG]: " + getStringJoined(mes));
+        }
+    }
+
+    public static void get(InetSocketAddress receipent, String ... mes) {
+        if (isPrintLog) {
+            System.out.println("[GET][" + receipent + "]: " + getStringJoined(mes));
+        }
+    }
+
+    public static void send(InetSocketAddress receipent, String ... mes) {
+        if (isPrintLog) {
+            System.out.println("[SEND][" + receipent + "]: " + getStringJoined(mes));
         }
     }
 

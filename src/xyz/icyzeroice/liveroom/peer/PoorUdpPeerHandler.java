@@ -39,28 +39,18 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
      * fire the callback while receive data from channel
      * &
      * generate a callback scope each time the listener is fired
+     * TODO: set a Subscribe/Publish Queue here
+     *
      * @param ctx    -- channel handle
      * @param packet -- received data
      */
     @Override
     public void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) {
-        ChannelFuture future = ctx.channel().close();
+        ChannelFuture future = ctx.channel().closeFuture();
+        String receive = packet.content().toString(CharsetUtil.UTF_8);
 
-        // future.addListener(new ChannelFutureListener() {
-        //    @Override
-        //    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-        //        String receive = packet.content().toString(CharsetUtil.UTF_8);
-        //        __receiveManager(channelFuture.channel(), receive, packet.sender());
-        //    }
-        // });
-
-        // TODO: split the listener & add `removeListener`
-        future.addListener((ChannelFuture channelFuture) -> {
-
-            // TODO: set a Subscribe/Publish Queue here
-            String receive = packet.content().toString(CharsetUtil.UTF_8);
-            __receiveManager(channelFuture.channel(), receive, packet.sender());
-        });
+        Console.get(packet.sender(), receive);
+        __receiveManager(future.channel(), receive, packet.sender());
     }
 
 
@@ -109,6 +99,7 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
                 return;
             }
 
+            // TODO:
             // 4, pulse
             if (receive.startsWith("[PLS]")) {
                 __receivePulse();
@@ -117,7 +108,7 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
 
             // 5. acknowledge
             if (receive.startsWith("[ACK]")) {
-                __receiveAcknowledge();
+                __receiveAcknowledge(channel, message, room, receipent);
                 return;
             }
         }
@@ -152,7 +143,8 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
     private void __initRoomList(Channel channel, String receive) {
 
         // receive --> ChatPeer Object
-        ChatPeer chatPeer = new ResponseFromServer(receive).getChatPeer();
+        ResponseFromServer response = new ResponseFromServer(receive);
+        ChatPeer chatPeer = response.getChatPeer();
 
         // find the room has the same token as the remote peer
         ChatRoom room = rooms.getIf((chatRoom) -> chatRoom.getToken().equals(chatPeer.getToken()));
@@ -167,6 +159,11 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
         else if (chatPeer.getRole().equals("MEMBER")) {
             Console.log("I am the MEMBER at room", chatPeer.getToken());
 
+            // set my role
+            room.myself.setRole("MEMBER");
+            room.myself.setPublicIp(response.getMyPublicIp());
+            room.myself.setPublicPort(response.getMyPublicPort());
+
             // add LEADER
             chatPeer.setRole("LEADER");
             room.setLeader().addPeer(chatPeer);
@@ -178,7 +175,11 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
     }
 
     private void __registerMyself(Channel channle, ChatRoom room) {
-        __wirte(channle, "[ACK][" + room.getToken() + "]" + RequestSentToServer.toString(room.myself), room.getLeader().getPublicAddress());
+        String message = "[ACK][" + room.getToken() + "]" + RequestSentToServer.toString(room.myself);
+
+        Console.log("Send myself", RequestSentToServer.toString(room.myself), "to leader", RequestSentToServer.toString(room.getLeader()));
+        __wirte(channle, message, room.getLeader().getPublicAddress());
+        __wirte(channle, message, room.getLeader().getInnerAddress());
     }
 
 
@@ -222,9 +223,17 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
         for (int i = 0; i < strArray.length; i++) {
             ChatPeer peer = new ResponseFromServer(strArray[i]).getChatPeer();
 
+            // set new leader
             if (peer.getRole().equals("LEADER")) {
                 room.setLeader();
             }
+
+            // update public address
+            if (peer.getName().equals(room.myself.getName())) {
+                continue;
+            }
+
+            // update local peer list
             room.addPeer(peer);
         }
     }
@@ -234,8 +243,10 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
 
 
     private void __receiveMessage(Channel channel, String message, ChatRoom room, InetSocketAddress receipent) {
-        Console.log("Receive data from " + receipent, "\n", message);
-        __wirte(channel, "[ACK]", receipent);
+        Console.get(receipent, message);
+
+        // TODO: LLLLLLLLLLOCAL SSSSSSSSSSTORAGE & Update Viewer
+        // __wirte(channel, "[ACK]", receipent);
     }
 
 
@@ -250,12 +261,36 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
     }
 
 
+
+
+
     /**
      * acknowledge if the received chat room info is useful
+     * @param channel
+     * @param message
+     * @param receipent
      */
-    private void __receiveAcknowledge() {
-
+    private void __receiveAcknowledge(Channel channel, String message, ChatRoom room, InetSocketAddress receipent) {
         Console.log("Get ACK.");
+
+        // get remote peer register info
+        ChatPeer peer = new ResponseFromServer(message).getChatPeer();
+
+        if (peer.getRole().equals("MEMBER")) {
+            __checkInner(peer, receipent);
+            __wirte(channel, "[UPD][" + room.getToken() + "]" + room.getPeerListToString(), receipent);
+            room.addPeer(peer);
+        }
+    }
+
+    private void __checkInner(ChatPeer peer, InetSocketAddress receipent) {
+
+        // inner
+        if (receipent.getPort() == Integer.parseInt(peer.getInnerPort())) {
+            peer.banPublicAddress();
+        } else {
+            peer.banInnerAddress();
+        }
     }
 
 
@@ -269,6 +304,8 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
             Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
             receipent
         ));
+
+        Console.send(receipent, message);
     }
 
 

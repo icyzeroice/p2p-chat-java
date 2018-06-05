@@ -14,7 +14,6 @@ public class RoomList extends ArrayList<ChatRoom> {
 
     @Override
     public boolean add(ChatRoom chatRoom) {
-        Console.log("Add room", chatRoom.getToken(), "to RoomList");
         return super.add(chatRoom);
     }
 
@@ -25,7 +24,6 @@ public class RoomList extends ArrayList<ChatRoom> {
 
     @Override
     public ChatRoom get(int index) {
-        Console.log("Find room", super.get(index).getToken());
         return super.get(index);
     }
 
@@ -49,13 +47,11 @@ public class RoomList extends ArrayList<ChatRoom> {
 
     @Override
     public boolean removeIf(Predicate<? super ChatRoom> filter) {
-        Console.log("Remove room by", filter.toString());
         return super.removeIf(filter);
     }
 
     @Override
     public void clear() {
-        Console.log("Clear the RoomList.");
         super.clear();
     }
 }

@@ -16,33 +16,40 @@ public class ResponseFromServer {
     public ResponseFromServer(String response) {
         this.response = response;
 
-        __set("role");
-        __set("token");
+        __set();
         __setHost("public");
         __setHost("inner");
     }
 
-    private void __set(String key) {
-        String pattern = "\"" + key + "\":\"(\\w+)\"";
+    private void __set() {
+        chatPeer = new ChatPeer(__get("name"), __get("token"));
+        chatPeer.setRole(__get("role"));
+    }
+
+    private String __get(String key) {
+        String pattern = "\"" + key + "\":\"*([\\w.]+)\"*";
 
         Pattern reg = Pattern.compile(pattern);
         Matcher match = reg.matcher(response);
 
         // TODO: throw error
         if (match.find()) {
-            switch (key) {
-                case "role":
-                    chatPeer.setRole(match.group(1));
-                    break;
-                case "token":
-                    chatPeer.setToken(match.group(1));
-                    break;
-            }
+            return match.group(1);
         }
+
+        return "";
+    }
+
+    public String getMyPublicIp() {
+        return __get("myPublicIp");
+    }
+
+    public String getMyPublicPort() {
+        return __get("myPublicPort");
     }
 
     private void __setHost(String key) {
-        String pattern = "\"" + key + "\":\\{\"ip\":\"([\\d.]+)\",\"port\":(\\d+)\\}";
+        String pattern = "\"" + key + "\":\\{\"ip\":\"([\\d.]+)\",\"port\":\"*(\\d+)\"*\\}";
 
         Pattern reg = Pattern.compile(pattern);
         Matcher match = reg.matcher(response);

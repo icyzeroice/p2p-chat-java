@@ -14,6 +14,8 @@
 
 - [ ] Use MAVEN & remove .iml of IDEA
 
+- [ ] Reduce hardcode
+
 - [ ] get rid of the central service
 
 - [ ] support NAT

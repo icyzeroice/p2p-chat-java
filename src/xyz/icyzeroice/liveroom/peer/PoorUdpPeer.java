@@ -32,6 +32,7 @@ public class PoorUdpPeer implements Peer {
     private static final int centerPort = CONST.REMOTE_SERVER_PORT;
 
     private int localPort;
+    private String name;
 
     // memory the leader's address
     private String leaderHost;
@@ -53,7 +54,8 @@ public class PoorUdpPeer implements Peer {
      *   2. group
      *   3. udp channel
      */
-    public PoorUdpPeer() {
+    public PoorUdpPeer(String name) {
+        this.name = name;
         __init();
     }
 
@@ -81,11 +83,10 @@ public class PoorUdpPeer implements Peer {
 
                 // export completed udp channel
                 channel = channelFuture.channel();
-                Console.log("UDP Channel is ready.");
             });
 
         } finally {
-            Console.log("Poor Udp Peer is initialized.");
+            Console.log("finally");
         }
     }
 
@@ -121,13 +122,13 @@ public class PoorUdpPeer implements Peer {
         String roomToken = Encrypt.encodeToken(roomId, roomPw);
 
         // register a new room in location
-        ChatRoom chatRoom = new ChatRoom(roomToken, localPort);
+        ChatRoom chatRoom = new ChatRoom(name, roomToken, localPort);
         rooms.add(chatRoom);
 
         // pull room info from server
         //   1. room is not register in server --> create & be the leader
         //   2. room is existed in server      --> get the leader info
-        __pull(RequestSentToServer.First("SEEK", roomToken, NetUtils.getInnerIp(), Integer.toString(localPort)));
+        __pull(RequestSentToServer.First("SEEK", name, roomToken, NetUtils.getInnerIp(), Integer.toString(localPort)));
 
         // get the room handle
         return rooms.indexOf(chatRoom);
@@ -142,23 +143,21 @@ public class PoorUdpPeer implements Peer {
     private void __pull(String request) {
 
         // FIXME: Global variables
-        __sendTo(request, centerHost, centerPort);
+        __sendTo(request, new InetSocketAddress(centerHost, centerPort));
     }
 
     /**
      * Send udp packet to a certain address
      * @param message
-     * @param host
-     * @param port
+     * @param receipent
      */
-    private void __sendTo(String message, String host, int port) {
+    private void __sendTo(String message, InetSocketAddress receipent) {
         if (channel != null) {
             channel.writeAndFlush(new DatagramPacket(
                 Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
-                new InetSocketAddress(host, port)
+                receipent
             ));
-            Console.log(message);
-            Console.log("Send last [LOG] message to", host + ":" + port);
+            Console.send(receipent, message);
         }
     }
 
@@ -175,12 +174,14 @@ public class PoorUdpPeer implements Peer {
         ChatRoom room = rooms.get(roomHandle);
 
         for (ChatPeer peer : room.getPeerList()) {
-            String REMOTE_HOST = peer.getPublicIp();
-            int REMOTE_PORT = Integer.parseInt(peer.getPublicPort());
 
             // TODO: acknowledge rules is necessary
             // TODO: add NAT support (try both inner address & public address)
-            __sendTo("[MES][" + room.getToken() + "]" + message, REMOTE_HOST, REMOTE_PORT);
+            // __sendTo("[MES][" + room.getToken() + "]" + message, peer.getPublicAddress());
+            String mes = "[MES][" + room.getToken() + "]" + message;
+            
+            __sendTo(mes, peer.getPublicAddress());
+            __sendTo(mes, peer.getInnerAddress());
         }
     }
 

@@ -6,19 +6,24 @@ import java.net.InetSocketAddress;
 
 public class ChatPeer {
 
+    private String name = "";
     private String token = "";
     private String role = "UNKNOW";
     private String innerIp = NetUtils.getInnerIp();
     private String innerPort = "";
     private String publicIp = "";
     private String publicPort = "";
+    public boolean isUseInner = true;
+    public boolean isUsePublic = true;
 
-    public ChatPeer(String token) {
-        setToken(token);
+    public ChatPeer(String name, String token) {
+        this.name = name;
+        this.token = token;
     }
 
-    public ChatPeer(String token, String localPort) {
-        setToken(token);
+    public ChatPeer(String name, String token, String localPort) {
+        this.name = name;
+        this.token = token;
         setInnerPort(localPort);
     }
 
@@ -26,20 +31,16 @@ public class ChatPeer {
         setRole(chatPeer.getRole());
         setPublicIp(chatPeer.getPublicIp());
         setPublicPort(chatPeer.getPublicPort());
-        setInnerIp(chatPeer.getInnerIp());
-        setInnerPort(chatPeer.getInnerPort());
     }
 
-    public void update(String role, String innerIp, String innerPort, String publicIp, String publicPort) {
+    public void update(String role, String publicIp, String publicPort) {
         setRole(role);
-        setInnerIp(innerIp);
-        setInnerPort(innerPort);
         setPublicIp(publicIp);
         setInnerPort(publicPort);
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public String getName() {
+        return name;
     }
 
     public String getToken() {
@@ -98,4 +99,17 @@ public class ChatPeer {
         return new InetSocketAddress(publicIp, Integer.parseInt(publicPort));
     }
 
+    // Config
+    public void banInnerAddress() {
+        isUseInner = false;
+    }
+    public void banPublicAddress() {
+        isUsePublic = false;
+    }
+    public boolean isUseInner() {
+        return isUseInner;
+    }
+    public boolean isUsePublic() {
+        return isUsePublic;
+    }
 }

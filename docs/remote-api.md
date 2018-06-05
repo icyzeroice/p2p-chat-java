@@ -30,6 +30,7 @@ port = 2333
 {
     "method": "<string>",
     "data": {
+        "name": "<string>",
         "token": "<string>",
         "public": "<host>",
         "inner": "<host>"
@@ -43,6 +44,7 @@ port = 2333
 {
     "method": "string",
     "data": {
+        "name": "<string>",
         "token": "<string>",
         "public": "<host>",
         "inner": "<host>"
@@ -58,6 +60,7 @@ port = 2333
 
 ```json
 {
+    "name": "<string>",
     "role": "LEADER",
     "token": "<string>",
     "public": "<host>",
@@ -69,6 +72,7 @@ port = 2333
 
 ```json
 {
+    "name": "<string>",
     "role": "MEMBER",
     "token": "<string>",
     "public": "<host>",
@@ -80,6 +84,7 @@ port = 2333
 
 ```json
 {
+    "name": "<string>",
     "role": "NEW_LEADER",
     "token": "<string>",
     "public": "<host>",
@@ -97,6 +102,7 @@ port = 2333
 
 ```json
 {
+    "name": "<string>",
     "role": "<string>",
     "token": "<string>",
     "public": "<host>",
