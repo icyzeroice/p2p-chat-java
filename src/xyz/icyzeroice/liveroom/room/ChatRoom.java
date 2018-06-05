@@ -75,13 +75,9 @@ public class ChatRoom {
     public String getPeerListToString() {
 
         if (peerList.size() == 0) {
-            return RequestSentToServer.toString(myself);
+            return null;
         }
 
-        return RequestSentToServer.toString(myself)
-            + "["
-            + getToken()
-            + "]"
-            + peerList.toFormatString();
+        return peerList.toFormatString();
     }
 }

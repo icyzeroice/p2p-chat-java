@@ -175,7 +175,7 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
     }
 
     private void __registerMyself(Channel channle, ChatRoom room) {
-        String message = "[ACK][" + room.getToken() + "]" + RequestSentToServer.toString(room.myself);
+        String message = "[UPD][" + room.getToken() + "]" + RequestSentToServer.toString(room.myself);
 
         Console.log("Send myself", RequestSentToServer.toString(room.myself), "to leader", RequestSentToServer.toString(room.getLeader()));
         __wirte(channle, message, room.getLeader().getPublicAddress());
@@ -197,11 +197,17 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
     private void __updatePeerList(Channel channel, String message, ChatRoom room, InetSocketAddress receipent) {
         String role = room.myself.getRole();
 
+        // I am leader
+        //   1. update this remote member
+        //   2. update remote member's ip list
         if (role.equals("LEADER")) {
             ChatPeer chatPeer = new ResponseFromServer(message).getChatPeer();
-            __updateFirstComingPeerInfo(chatPeer);
             __updateRemotePeerList(channel, chatPeer, room, receipent);
-        } else if (role.equals("MEMBER")) {
+            __updateFirstComingPeerInfo(chatPeer);
+        }
+
+        // I am member
+        else if (role.equals("MEMBER")) {
             __updateLocalPeerList(message, room);
         }
     }
@@ -211,13 +217,32 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
         rooms.getIf((chatRoom -> chatRoom.getToken().equals(firstComing.getToken())))
              .addPeer(firstComing);
     }
+    private void __updateRemotePeerList(Channel channel, ChatPeer peer, ChatRoom room, InetSocketAddress receipent) {
+        // get remote peer register info
 
-    private void __updateRemotePeerList(Channel channel, ChatPeer firstComing, ChatRoom room, InetSocketAddress receipent) {
-        __wirte(channel, "[UPD][" + firstComing.getToken() + "]" + room.getPeerListToString(), receipent);
+        if (peer.getRole().equals("MEMBER")) {
+
+            String upd = "[UPD][" + room.getToken() + "]" + room.getPeerListToString();
+
+            __checkInner(peer, receipent);
+            __wirte(channel, upd, receipent);
+
+            for (ChatPeer exist : room.getPeerList()) {
+                __wirte(channel, upd, exist.getInnerAddress());
+                __wirte(channel, upd, exist.getPublicAddress());
+            }
+        }
     }
 
     // Update room peers info
     private void __updateLocalPeerList(String message, ChatRoom room) {
+
+        // if message is null
+        if (message.equals("null")) {
+            return;
+        }
+
+        // if message has peer info
         String[] strArray = message.split("\\[" + room.getToken() + "\\]");
 
         for (int i = 0; i < strArray.length; i++) {
@@ -235,6 +260,16 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
 
             // update local peer list
             room.addPeer(peer);
+        }
+    }
+
+    private void __checkInner(ChatPeer peer, InetSocketAddress receipent) {
+
+        // inner
+        if (receipent.getPort() == Integer.parseInt(peer.getInnerPort())) {
+            peer.banPublicAddress();
+        } else {
+            peer.banInnerAddress();
         }
     }
 
@@ -272,25 +307,6 @@ public class PoorUdpPeerHandler extends SimpleChannelInboundHandler<DatagramPack
      */
     private void __receiveAcknowledge(Channel channel, String message, ChatRoom room, InetSocketAddress receipent) {
         Console.log("Get ACK.");
-
-        // get remote peer register info
-        ChatPeer peer = new ResponseFromServer(message).getChatPeer();
-
-        if (peer.getRole().equals("MEMBER")) {
-            __checkInner(peer, receipent);
-            __wirte(channel, "[UPD][" + room.getToken() + "]" + room.getPeerListToString(), receipent);
-            room.addPeer(peer);
-        }
-    }
-
-    private void __checkInner(ChatPeer peer, InetSocketAddress receipent) {
-
-        // inner
-        if (receipent.getPort() == Integer.parseInt(peer.getInnerPort())) {
-            peer.banPublicAddress();
-        } else {
-            peer.banInnerAddress();
-        }
     }
 
 
